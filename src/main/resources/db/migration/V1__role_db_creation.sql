@@ -1,9 +1,10 @@
 CREATE TABLE roles
 (
-    id                   serial       PRIMARY KEY NOT NULL,
-    name             varchar(255) UNIQUE NOT NULL
+    id                       BIGSERIAL    PRIMARY KEY NOT NULL,
+    name                     varchar(255) UNIQUE NOT NULL,
+    created_at               TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+    updated_at               TIMESTAMP,
+    deleted_tmsp             TIMESTAMP
 );
 
-INSERT INTO public.roles(name) VALUES('ROLE_CUSTOMER'), ('ROLE_ADMINISTRATOR');
-
-DROP TABLE roles;
+INSERT INTO public.roles(name) VALUES('ROLE_ADMINISTRATOR'), ('ROLE_MEDIC'), ('ROLE_NURSE');
