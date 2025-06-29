@@ -3,6 +3,8 @@ package br.com.postechfiap.autenticacaoservice.infraestructure.controller;
 import br.com.postechfiap.autenticacaoservice.application.interfaces.*;
 import br.com.postechfiap.autenticacaoservice.infraestructure.controller.adapters.UserAdapter;
 import br.com.postechfiap.autenticacaoservice.infraestructure.controller.dto.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +15,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
+@Tag(name = "Usuários",description = "Api de gerenciamento de usuários")
 public class UserController {
 
     private final AuthenticateUserUseCase authenticateUserUseCase;
@@ -23,22 +26,26 @@ public class UserController {
     private final UserAdapter userAdapter;
 
     @PostMapping("/login")
+    @Operation(summary = "Autenticar usuário", description = "Endpoint para autenticar um usuário e retornar um token JWT")
     public ResponseEntity<RecoveryJwtTokenDto> authenticateUser(@RequestBody LoginUserDto loginUserDto) {
         return ResponseEntity.ok(authenticateUserUseCase.execute(loginUserDto));
     }
 
     @PostMapping
+    @Operation(summary = "Criar usuário", description = "Endpoint para criar um novo usuário")
     public ResponseEntity<UserResponse> createUser(@RequestBody CreateUserDto createUserDto) {
         final var user = userAdapter.toUser(createUserDto);
         return new ResponseEntity<>(createUserUseCase.execute(user), HttpStatus.CREATED);
     }
 
     @GetMapping
+    @Operation(summary = "Listar usuários", description = "Endpoint para listar todos os usuários ou filtrar por tipo de funcionário")
     public ResponseEntity<List<UserResponse>> getUsers(@RequestParam(required = false) String employeeType) {
         return ResponseEntity.ok(getUserUseCase.execute(employeeType));
     }
 
     @PatchMapping("/{userId}")
+    @Operation(summary = "Atualizar usuário", description = "Endpoint para atualizar um usuário existente")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long userId, @RequestBody UpdateUserDto updateUserDto) {
         final var user = userAdapter.updateUser(updateUserDto);
         user.setId(userId);
@@ -46,24 +53,9 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
+    @Operation(summary = "Deletar usuário", description = "Endpoint para deletar um usuário existente")
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
         deleteUserUseCase.execute(userId);
         return ResponseEntity.noContent().build();
     }
-
-    @GetMapping("/test")
-    public ResponseEntity<String> getAuthenticationTest() {
-        return new ResponseEntity<>("Autenticado com sucesso", HttpStatus.OK);
-    }
-
-    @GetMapping("/test/customer")
-    public ResponseEntity<String> getCustomerAuthenticationTest() {
-        return new ResponseEntity<>("Cliente autenticado com sucesso", HttpStatus.OK);
-    }
-
-    @GetMapping("/test/administrator")
-    public ResponseEntity<String> getAdminAuthenticationTest() {
-        return new ResponseEntity<>("Administrador autenticado com sucesso", HttpStatus.OK);
-    }
-
 }
