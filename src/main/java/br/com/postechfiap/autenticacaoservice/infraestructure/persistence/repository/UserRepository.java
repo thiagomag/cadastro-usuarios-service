@@ -11,6 +11,6 @@ public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
     Optional<UserEntity> findByEmail(String email);
 
-    List<UserEntity> findByEmployeeTypeEnum(EmployeeTypeEnum employeeTypeEnum);
+    List<UserEntity> findByEmployeeType(EmployeeTypeEnum employeeTypeEnum);
 
 }

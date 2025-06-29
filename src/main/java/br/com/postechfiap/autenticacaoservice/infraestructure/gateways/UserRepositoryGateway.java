@@ -57,6 +57,6 @@ public class UserRepositoryGateway implements UserGateway {
 
     @Override
     public List<UserEntity> findByEmployeeType(EmployeeTypeEnum employeeType) {
-        return userRepository.findByEmployeeTypeEnum(employeeType);
+        return userRepository.findByEmployeeType(employeeType);
     }
 }
