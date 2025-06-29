@@ -24,28 +24,19 @@ public class SecurityConfiguration {
 
     public static final String [] POST_ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED = {
             "/users/login", //url que usaremos para fazer login
-            "/users", //url que usaremos para criar um usuário
-            "/swagger-ui/index.html"
+            "/users" //url que usaremos para criar um usuário
+    };
+
+    public static final String [] PUBLIC_ENDPOINTS = {
+            "/api/swagger-ui.html", // Adicione aqui
+            "/v3/api-docs/**",     // Caminho para a especificação OpenAPI (JSON/YAML)
+            "/swagger-ui/**",
+            "/.well-known/**"
     };
 
     // Endpoints que requerem autenticação para serem acessados
     public static final String [] ENDPOINTS_WITH_AUTHENTICATION_REQUIRED = {
-            "/users/test"
-    };
-
-    // Endpoints que só podem ser acessador por usuários com permissão de administrador
-    public static final String [] ENDPOINTS_ADMIN = {
-            "/users/test/administrator"
-    };
-
-    // Endpoints que só podem ser acessador por usuários com permissão de médico
-    public static final String [] ENDPOINTS_MEDIC = {
-            "/users/test/medic"
-    };
-
-    // Endpoints que só podem ser acessados por usuários com permissão de enfermeiro
-    public static final String [] ENDPOINTS_NURSE = {
-            "/users/test/nurse"
+            "/users/**"
     };
 
     @Bean
@@ -55,11 +46,9 @@ public class SecurityConfiguration {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // Configura a política de sessão como stateless usando Lambda DSL
                 .authorizeHttpRequests(authorize -> authorize // Habilita a autorização para as requisições HTTP usando Lambda DSL
                         .requestMatchers(HttpMethod.POST, POST_ENDPOINTS_WITH_AUTHENTICATION_NOT_REQUIRED).permitAll()
+                        .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                         .requestMatchers(ENDPOINTS_WITH_AUTHENTICATION_REQUIRED).authenticated()
-                        .requestMatchers(ENDPOINTS_ADMIN).hasRole("ADMINISTRATOR") // Repare que não é necessário colocar "ROLE" antes do nome, como fizemos na definição das roles
-                        .requestMatchers(ENDPOINTS_MEDIC).hasRole("MEDIC")
-                        .requestMatchers(ENDPOINTS_NURSE).hasRole("NURSE")
-                        .anyRequest().denyAll() //
+                        .anyRequest().denyAll()
                 )
                 .addFilterBefore(userAuthenticationFilter, UsernamePasswordAuthenticationFilter.class); // Adiciona o filtro de autenticação de usuário que criamos, antes do filtro de segurança padrão do Spring Security
 

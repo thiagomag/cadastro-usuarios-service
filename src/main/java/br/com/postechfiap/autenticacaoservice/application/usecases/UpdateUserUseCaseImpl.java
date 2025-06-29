@@ -34,7 +34,7 @@ public class UpdateUserUseCaseImpl implements UpdateUserUseCase {
 
     private RoleNameEnum getRoleType(EmployeeTypeEnum employeeTypeEnum) {
         return switch (employeeTypeEnum) {
-            case EmployeeTypeEnum.ADMINISTRATIVE -> RoleNameEnum.ROLE_ADMINISTRATIVE;
+            case EmployeeTypeEnum.ADMINISTRATIVE -> RoleNameEnum.ROLE_ADMINISTRATOR;
             case EmployeeTypeEnum.MEDICAL -> RoleNameEnum.ROLE_MEDIC;
             case EmployeeTypeEnum.NURSE -> RoleNameEnum.ROLE_NURSE;
         };
