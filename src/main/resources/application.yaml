@@ -12,9 +12,12 @@ spring:
       hibernate:
         generate-ddl: true
         ddl-auto: update
+  data:
+    rest:
+      base-path: /auth
 
 jwt:
-  secret: 4Z^XrroxR@dWxqf$mTTKwW$!@#qGr4P
+  secret: 4Z^XrroxR@dWxqf$mTTKwW$!@#qGr4PT
 
 server:
   port: 8081
