@@ -5,7 +5,6 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTCreationException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 
@@ -14,48 +13,56 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.stream.Collectors;
 
+import lombok.RequiredArgsConstructor;
+
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+
 @Service
+@RequiredArgsConstructor
 public class JwtTokenService {
 
-    @Value("${jwt.secret}") // Anotação para injetar do application.yml
-    private String secretKey;// Chave secreta utilizada para gerar e verificar o token
+    private static final String ISSUER = "fiap-hackaton";
 
-    private static final String ISSUER = "fiap-hackaton"; // Emissor do token
+    private final com.nimbusds.jose.jwk.RSAKey rsaKey;
 
     public String generateToken(UserDetailsImpl user) {
         try {
-            // Define o algoritmo HMAC SHA256 para criar a assinatura do token passando a chave secreta definida
-            Algorithm algorithm = Algorithm.HMAC256(secretKey);
+            RSAPrivateKey privateKey = rsaKey.toRSAPrivateKey();
+            RSAPublicKey publicKey = rsaKey.toRSAPublicKey();
 
-            // Coleta os nomes das roles do usuário
-            // UserDetailsImpl fornece as authorities
+            Algorithm algorithm = Algorithm.RSA256(publicKey, privateKey);
+
             String roles = user.getAuthorities().stream()
-                    .map(GrantedAuthority::getAuthority) // Pega o nome da role (ex: "ROLE_ADMINISTRATOR")
-                    .collect(Collectors.joining(",")); // Junta em uma string separada por vírgulas
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.joining(","));
 
             return JWT.create()
-                    .withIssuer(ISSUER) // Define o emissor do token
-                    .withIssuedAt(creationDate()) // Define a data de emissão do token
-                    .withExpiresAt(expirationDate()) // Define a data de expiração do token
-                    .withSubject(user.getUsername()) // Define o assunto do token (neste caso, o nome de usuário)
-                    .withClaim("roles", roles) // Adiciona as roles do usuário como uma claim no token
-                    .sign(algorithm); // Assina o token usando o algoritmo especificado
-        } catch (JWTCreationException exception){
-            throw new JWTCreationException("Erro ao gerar token.", exception);
+                    .withIssuer(ISSUER)
+                    .withIssuedAt(creationDate())
+                    .withExpiresAt(expirationDate())
+                    .withSubject(user.getUsername())
+                    .withClaim("roles", roles)
+                    .withKeyId(rsaKey.getKeyID()) // Adiciona o ID da chave no token
+                    .sign(algorithm);
+
+        } catch (Exception exception){ // Captura Exception genérica por causa do .toRSAPrivateKey()
+            throw new JWTCreationException("Erro ao gerar token com chave RSA.", exception);
         }
     }
 
     public String getSubjectFromToken(String token) {
         try {
-            // Define o algoritmo HMAC SHA256 para verificar a assinatura do token passando a chave secreta definida
-            Algorithm algorithm = Algorithm.HMAC256(secretKey);
+            RSAPublicKey publicKey = rsaKey.toRSAPublicKey();
+            Algorithm algorithm = Algorithm.RSA256(publicKey, null);
+
             return JWT.require(algorithm)
-                    .withIssuer(ISSUER) // Define o emissor do token
+                    .withIssuer(ISSUER)
                     .build()
-                    .verify(token) // Verifica a validade do token
-                    .getSubject(); // Obtém o assunto (neste caso, o nome de usuário) do token
-        } catch (JWTVerificationException exception){
-            throw new JWTVerificationException("Token inválido ou expirado.");
+                    .verify(token)
+                    .getSubject();
+        } catch (Exception exception){
+            throw new JWTVerificationException("Token inválido ou expirado.", exception);
         }
     }
 
@@ -66,5 +73,4 @@ public class JwtTokenService {
     private Instant expirationDate() {
         return ZonedDateTime.now(ZoneId.of("America/Sao_Paulo")).plusHours(4).toInstant();
     }
-
 }

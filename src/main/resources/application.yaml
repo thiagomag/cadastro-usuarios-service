@@ -12,9 +12,10 @@ spring:
       hibernate:
         generate-ddl: true
         ddl-auto: update
-
-jwt:
-  secret: 4Z^XrroxR@dWxqf$mTTKwW$!@#qGr4PT
-
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: http://localhost:8081/.well-known/jwks.json
 server:
   port: 8081
