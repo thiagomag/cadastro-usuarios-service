@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -40,18 +41,21 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
     @Operation(summary = "Listar usuários", description = "Endpoint para listar todos os usuários ou filtrar por tipo de funcionário")
     public ResponseEntity<List<UserResponse>> getUsers(@RequestParam(required = false) String employeeType) {
         return ResponseEntity.ok(getUsersUseCase.execute(employeeType));
     }
 
     @GetMapping("/{userId}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR', 'ROLE_MEDIC', 'ROLE_NURSE')")
     @Operation(summary = "Listar usuários por id", description = "Endpoint para listar usuáriospor id")
     public ResponseEntity<UserResponse> getUserById(@PathVariable Long userId) {
         return ResponseEntity.ok(getUserUseCase.execute(userId));
     }
 
     @PatchMapping("/{userId}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR', 'ROLE_MEDIC', 'ROLE_NURSE')")
     @Operation(summary = "Atualizar usuário", description = "Endpoint para atualizar um usuário existente")
     public ResponseEntity<UserResponse> updateUser(@PathVariable Long userId, @RequestBody UpdateUserDto updateUserDto) {
         final var user = userAdapter.updateUser(updateUserDto);
@@ -60,6 +64,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{userId}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMINISTRATOR')")
     @Operation(summary = "Deletar usuário", description = "Endpoint para deletar um usuário existente")
     public ResponseEntity<Void> deleteUser(@PathVariable Long userId) {
         deleteUserUseCase.execute(userId);
